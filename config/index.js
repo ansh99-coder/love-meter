@@ -50,6 +50,7 @@ const config = {
       ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n')
       : '',
     databaseURL: process.env.FIREBASE_DATABASE_URL || undefined,
+    serviceAccountJson: process.env.FIREBASE_SERVICE_ACCOUNT_JSON,
     serviceAccountPath: process.env.FIREBASE_SERVICE_ACCOUNT_PATH || '',
     // These are for the *web* Firebase SDK used on the client for admin auth.
     web: {
