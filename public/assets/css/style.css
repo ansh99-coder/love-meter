@@ -498,7 +498,7 @@ h1.hero {
 .share-box-header h3 { font-size: 18px; margin: 0; }
 .share-close { background: transparent; border: none; color: var(--text-dim); font-size: 20px; cursor: pointer; padding: 4px 8px; border-radius: 50%; transition: var(--transition); line-height: 1; }
 .share-close:hover { background: rgba(255,255,255,0.1); color: var(--text); }
-.share-message { font-size: 13px; color: var(--text-dim); margin-bottom: 16px; padding: 10px 12px; background: rgba(255,255,255,0.03); border-radius: var(--radius-md); line-height: 1.5; }
+.share-message { font-size: 13px; color: var(--text-dim); margin-bottom: 16px; padding: 10px 12px; background: rgba(255,255,255,0.03); border-radius: var(--radius-md); line-height: 1.5; white-space: pre-line; }
 .share-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
 .share-option { display: flex; align-items: center; gap: 8px; padding: 12px 14px; border-radius: var(--radius-md); border: 1px solid var(--border); background: rgba(255,255,255,0.03); color: var(--text); font-size: 13px; font-weight: 600; cursor: pointer; transition: var(--transition); font-family: inherit; }
 .share-option:hover { background: rgba(255,255,255,0.08); border-color: var(--border-hover); transform: translateY(-1px); }

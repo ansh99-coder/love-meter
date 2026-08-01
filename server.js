@@ -99,7 +99,7 @@ app.use(errorHandler);
 // Start
 // ---------------------------------------------------------------------------
 app.listen(PORT, '0.0.0.0', () => {
-  logger.info(`Love Meter running at http://localhost:${PORT}`);
+  logger.info(`Love Meter running at https://love-meter-in02.onrender.com/ (local port ${PORT})`);
   logger.info(`Mode: ${config.isProd ? 'production' : 'development'}`);
   logger.info(`Firestore: ${config.firebase.projectId ? 'configured' : 'preview (in-memory)'}`);
   if (!config.firebase.projectId) {

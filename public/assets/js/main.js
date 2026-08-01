@@ -10,15 +10,13 @@
 import { API_BASE, getDailyQuote, getMessageForScore, getRandomLoadingMessage } from './config.js';
 import { launchConfetti, animateCountUp, animateMeterFill, heartbeatEffect, showToast, rippleEffect } from './animations.js';
 import { playClick, playSuccess, playHeartbeat, isSoundEnabled, toggleSound, toggleMusic, isMusicEnabled, preloadAudio, playMusic } from './audio.js';
-import { sanitize, getOrCreateSessionId, getTimezone, getLanguage, escapeHtml, getShareData } from './utils.js';
+import { sanitize, getOrCreateSessionId, getTimezone, getLanguage, escapeHtml, getShareData, buildShareMessage, copyToClipboard } from './utils.js';
 import { calculateLove } from './api.js';
 import { initParticles, initHeartTrail, initCustomCursor, injectParticleStyles } from './particles.js';
 
 // State
 let lastResult = null;
 let sessionId = getOrCreateSessionId();
-let clickCount = 0;
-let clickTimer = null;
 
 // DOM refs
 const p1Input = document.getElementById('p1');
@@ -197,16 +195,6 @@ retryBtn.addEventListener('click', () => {
 // ============================================================
 // Premium Share Popup
 // ============================================================
-function buildShareText(result) {
-  const name1 = result.yourName || result.name1;
-  const name2 = result.crushName || result.name2;
-  const msg = getMessageForScore(result.score);
-  return {
-    full: `${name1} ❤️ ${name2} have a Love Score of ${result.score}%! ${msg ? msg.title : 'Love Connection'} 💕\n\nTry yours at:`,
-    short: `${name1} ❤️ ${name2} = ${result.score}% Love Compatibility!`
-  };
-}
-
 function buildShareUrl(result) {
   // Create a shareable URL with encoded data (names + score)
   const { url } = getShareData(result);
@@ -240,16 +228,30 @@ function handleShareUrl() {
   } catch {}
 }
 
-// Share button click — opens the premium share popup
-shareBtn.addEventListener('click', () => {
+// Share button click — uses Web Share API on supported devices,
+// otherwise opens the share popup with the formatted message.
+shareBtn.addEventListener('click', async () => {
   if (!lastResult) return;
   playClick();
 
-  const texts = buildShareText(lastResult);
-  const shareUrl = buildShareUrl(lastResult);
+  const message = buildShareMessage(lastResult);
+
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: 'Love Meter Result ❤️',
+        text: message,
+        url: buildShareUrl(lastResult)
+      });
+      return;
+    } catch (shareErr) {
+      // Ignore user-cancelled shares; fall through to the popup otherwise
+      if (shareErr && shareErr.name === 'AbortError') return;
+    }
+  }
 
   if (shareMessage) {
-    shareMessage.textContent = texts.full;
+    shareMessage.textContent = message;
   }
   if (shareNote) {
     shareNote.style.display = 'none';
@@ -269,52 +271,60 @@ document.querySelectorAll('.share-option').forEach(btn => {
   btn.addEventListener('click', async (e) => {
     if (!lastResult) return;
     const network = btn.dataset.network;
-    const texts = buildShareText(lastResult);
+    const message = buildShareMessage(lastResult);
     const shareUrl = buildShareUrl(lastResult);
-    const fullText = `${texts.full} ${shareUrl}`;
-    const shortText = texts.short;
 
-    switch (network) {
-      case 'whatsapp':
-        window.open(`https://wa.me/?text=${encodeURIComponent(fullText)}`, '_blank', 'noopener,noreferrer');
-        break;
-      case 'facebook':
-        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shortText)}`, '_blank', 'noopener,noreferrer');
-        break;
-      case 'instagram': {
-        // Instagram doesn't support direct URL sharing - copy to clipboard
-        await navigator.clipboard.writeText(fullText);
-        if (shareNote) {
-          shareNote.textContent = '📸 Copied! Paste this on Instagram.';
-          shareNote.style.display = 'block';
+    try {
+      switch (network) {
+        case 'whatsapp':
+          window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank', 'noopener,noreferrer');
+          break;
+        case 'facebook':
+          window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(message)}`, '_blank', 'noopener,noreferrer');
+          break;
+        case 'instagram': {
+          // Instagram doesn't support direct URL sharing - copy to clipboard
+          await copyToClipboard(message);
+          if (shareNote) {
+            shareNote.textContent = '📸 Copied! Paste this on Instagram.';
+            shareNote.style.display = 'block';
+          }
+          showToast('Copied for Instagram!', 'success');
+          break;
         }
-        showToast('Copied for Instagram!', 'success');
-        break;
-      }
-      case 'telegram':
-        window.open(`https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shortText)}`, '_blank', 'noopener,noreferrer');
-        break;
-      case 'twitter':
-        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shortText)}&url=${encodeURIComponent(shareUrl)}`, '_blank', 'noopener,noreferrer');
-        break;
-      case 'copy':
-        await navigator.clipboard.writeText(fullText);
-        if (shareNote) {
-          shareNote.textContent = '🔗 Link copied to clipboard!';
-          shareNote.style.display = 'block';
-        }
-        showToast('Copied to clipboard!', 'success');
-        break;
-      case 'native':
-        if (navigator.share) {
-          try {
-            await navigator.share({ title: 'Love Meter', text: shortText, url: shareUrl });
-          } catch {}
-        } else {
-          await navigator.clipboard.writeText(fullText);
+        case 'telegram':
+          window.open(`https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(message)}`, '_blank', 'noopener,noreferrer');
+          break;
+        case 'twitter':
+          window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(message)}&url=${encodeURIComponent(shareUrl)}`, '_blank', 'noopener,noreferrer');
+          break;
+        case 'copy':
+          await copyToClipboard(message);
+          if (shareNote) {
+            shareNote.textContent = '🔗 Message copied to clipboard!';
+            shareNote.style.display = 'block';
+          }
           showToast('Copied to clipboard!', 'success');
-        }
-        break;
+          break;
+        case 'native':
+          if (navigator.share) {
+            try {
+              await navigator.share({
+                title: 'Love Meter Result ❤️',
+                text: message,
+                url: shareUrl
+              });
+            } catch (shareErr) {
+              if (shareErr && shareErr.name === 'AbortError') return;
+            }
+          } else {
+            await copyToClipboard(message);
+            showToast('Copied to clipboard!', 'success');
+          }
+          break;
+      }
+    } catch (copyErr) {
+      showToast('Could not copy. Please copy manually.', 'error');
     }
   });
 });
@@ -397,18 +407,80 @@ if (musicToggleEl) {
 }
 
 // ============================================================
-// Triple-click handler for hidden admin
+// Hidden admin access triggers
+// Desktop: Ctrl+Shift+L. Mobile: hold lock icon 3s, then tap 5x.
+// Only reveals the existing admin login — does not bypass auth.
 // ============================================================
+function openAdminLogin() {
+  showScreen('screen-admin-login');
+  playClick();
+}
+
+// Desktop shortcut — Ctrl+Shift+L
+document.addEventListener('keydown', (e) => {
+  if (e.ctrlKey && e.shiftKey && (e.key === 'L' || e.key === 'l')) {
+    e.preventDefault();
+    openAdminLogin();
+  }
+});
+
+// Mobile gesture — hold lock icon for 3s, then tap 5 times quickly
+let lockHeld = false;
+let lockTapCount = 0;
+let lockTapResetTimer = null;
+
+function armLockTaps() {
+  lockHeld = true;
+  lockTapCount = 0;
+}
+
+function disarmLockTaps() {
+  lockHeld = false;
+  lockTapCount = 0;
+  if (lockTapResetTimer) {
+    clearTimeout(lockTapResetTimer);
+    lockTapResetTimer = null;
+  }
+}
+
 if (lockIcon) {
+  let pressTimer = null;
+  let pressStarted = false;
+
+  const startPress = (e) => {
+    // Only for touch/pointer interactions on the lock icon
+    if (e.type === 'pointerdown' && e.pointerType !== 'mouse') {
+      pressStarted = true;
+      pressTimer = setTimeout(() => {
+        armLockTaps();
+        pressStarted = false;
+      }, 3000);
+    }
+  };
+
+  const cancelPress = () => {
+    if (pressTimer) {
+      clearTimeout(pressTimer);
+      pressTimer = null;
+    }
+    pressStarted = false;
+  };
+
+  lockIcon.addEventListener('pointerdown', startPress);
+  lockIcon.addEventListener('pointerup', cancelPress);
+  lockIcon.addEventListener('pointercancel', cancelPress);
+  lockIcon.addEventListener('pointerleave', cancelPress);
+  // Context menu shouldn't interfere on long-press mobile browsers
+  lockIcon.addEventListener('contextmenu', (e) => e.preventDefault());
+
   lockIcon.addEventListener('click', () => {
-    clickCount++;
-    if (clickTimer) clearTimeout(clickTimer);
-    if (clickCount >= 3) {
-      clickCount = 0;
-      showScreen('screen-admin-login');
-      playClick();
-    } else {
-      clickTimer = setTimeout(() => { clickCount = 0; }, 2000);
+    if (!lockHeld) return;
+    lockTapCount++;
+    if (lockTapResetTimer) clearTimeout(lockTapResetTimer);
+    lockTapResetTimer = setTimeout(() => { lockTapCount = 0; }, 1500);
+    if (lockTapCount >= 5) {
+      disarmLockTaps();
+      openAdminLogin();
     }
   });
 }
@@ -483,3 +555,4 @@ export function init() {
 
 // Auto-init
 document.addEventListener('DOMContentLoaded', init);
+

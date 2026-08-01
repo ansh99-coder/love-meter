@@ -71,7 +71,7 @@ Edit `.env` with your Firebase project settings:
 npm start
 ```
 
-Open http://localhost:4000
+Open https://love-meter-in02.onrender.com/
 
 ---
 

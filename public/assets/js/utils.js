@@ -9,6 +9,9 @@ export function escapeHtml(str) {
   return div.innerHTML;
 }
 
+/** Production app URL used for all share links. */
+export const APP_URL = 'https://love-meter-in02.onrender.com/';
+
 /** Sanitize a string: remove angle brackets, trim, cap length. */
 export function sanitize(str, maxLen = 40) {
   return String(str || '')
@@ -75,6 +78,7 @@ export function formatNumber(n) {
 
 /**
  * Build a shareable message + URL for a love result.
+ * Uses the production APP_URL — never the current window origin.
  * @param {object} result - { yourName, crushName, score, title }
  * @returns {{ message: string, url: string }}
  */
@@ -82,14 +86,66 @@ export function getShareData(result) {
   const name1 = result.yourName || result.name1 || '';
   const name2 = result.crushName || result.name2 || '';
   const score = result.score ?? 0;
-  const title = result.title || result.message || 'Love Connection';
 
-  const message = `${name1} ❤️ ${name2} have a Love Score of ${score}%! ${title} 💕\n\nTry yours at:`;
+  const message = buildShareMessage(result);
 
   // Encode names + score into a shareable URL query param
   const shareData = `${encodeURIComponent(name1)}|${encodeURIComponent(name2)}|${score}`;
-  const baseUrl = window.location.origin + window.location.pathname;
-  const url = `${baseUrl}?share=${btoa(shareData)}`;
+  const url = `${APP_URL}?share=${btoa(shareData)}`;
 
   return { message, url };
 }
+
+/**
+ * Build the clean, formatted share message.
+ * Uses the first entered person's name dynamically.
+ * @param {object} result - { yourName, crushName, score }
+ * @returns {string}
+ */
+export function buildShareMessage(result) {
+  const name1 = result.yourName || result.name1 || 'You';
+  const score = result.score ?? 0;
+
+  return `❤️ Love Meter Result ❤️
+
+✨ ${name1}'s Love Meter Score ✨
+
+💖 Compatibility Score: ${score}%
+
+A beautiful match with amazing vibes and a heart full of love. 💕
+
+Discover your own Love Meter score and see what your heart reveals! ❤️
+
+🔗 Try it here:
+${APP_URL}`;
+}
+
+/** Copy text to the clipboard with a fallback for non-secure contexts. */
+export async function copyToClipboard(text) {
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return;
+    }
+  } catch {
+    // fall through to legacy fallback
+  }
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.left = '-9999px';
+  ta.style.top = '0';
+  ta.setAttribute('readonly', '');
+  document.body.appendChild(ta);
+  ta.select();
+  ta.setSelectionRange(0, ta.value.length);
+  let ok = false;
+  try {
+    ok = document.execCommand('copy');
+  } catch {
+    ok = false;
+  }
+  document.body.removeChild(ta);
+  if (!ok) throw new Error('Clipboard copy failed');
+}
+
