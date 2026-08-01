@@ -1,0 +1,35 @@
+rules_version = '2';
+
+// Love Meter ❤️ — Firestore Security Rules
+//
+// The client-side web app does NOT write directly to Firestore.
+// ALL writes are performed server-side via the Firebase Admin SDK,
+// which bypasses these rules (it uses service account credentials).
+//
+// Therefore, we DENY all client access. This is the most secure
+// configuration for this architecture.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Deny all client reads/writes by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // OPTIONAL: Allow authenticated admin users to read (for real-time
+    // dashboard updates via client SDK). Uncomment below if desired.
+    //
+    // match /calculations/{docId} {
+    //   allow read: if request.auth != null
+    //     && request.auth.token.email in ["admin@example.com"];
+    //   allow write: if false;
+    // }
+    //
+    // match /visitors/{docId} {
+    //   allow read: if request.auth != null
+    //     && request.auth.token.email in ["admin@example.com"];
+    //   allow write: if false;
+    // }
+  }
+}

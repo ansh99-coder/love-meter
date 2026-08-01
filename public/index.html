@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
+  <title>Love Meter ❤️ – Discover Your Love Compatibility</title>
+  <meta name="description" content="Enter two names and discover your magical love compatibility score. The ultimate love meter with romantic animations." />
+  <meta name="theme-color" content="#0a0012" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta property="og:title" content="Love Meter ❤️ – Discover Your Love Compatibility" />
+  <meta property="og:description" content="Enter two names and discover your magical love compatibility score. The ultimate love meter." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="/icons/og-image.png" />
+  <meta property="og:url" content="https://lovemeter.app" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Love Meter ❤️" />
+  <meta name="twitter:description" content="Discover your magical love compatibility." />
+  <meta name="twitter:image" content="/icons/og-image.png" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="stylesheet" href="/assets/css/style.css" />
+  <style>
+    /* Inline critical path styles for fast first paint */
+    body { background: #0a0012; color: #f5f0ff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; }
+    .screen:not(.active) { display: none !important; }
+    #particles-layer { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 1; }
+    #confetti-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 60; }
+  </style>
+</head>
+<body>
+
+  <!-- Confetti Canvas -->
+  <canvas id="confetti-canvas"></canvas>
+
+  <!-- Particles Layer -->
+  <div id="particles-layer"></div>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Sound Toggle -->
+  <div class="sound-toggle" id="sound-toggle" title="Toggle sound">🔊</div>
+
+  <!-- Music Toggle -->
+  <div class="music-toggle" id="music-toggle" title="Toggle background music">🎵</div>
+
+  <!-- Secret Lock Icon (hidden admin access — triple-click within 2s) -->
+  <div id="secret-lock" title="🔒">🔒</div>
+
+  <!-- Main App -->
+  <div class="app">
+
+    <!-- Brand Header -->
+    <div class="brand">
+      <div class="brand-icon">❤️</div>
+      <div class="brand-name">LOVE METER</div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- HOME SCREEN                                                   -->
+    <!-- ============================================================ -->
+    <div class="screen active" id="screen-home">
+      <h1 class="hero">How Strong Is Your Love?</h1>
+      <p class="subtitle">Discover your romantic compatibility in seconds.</p>
+
+      <!-- Daily Quote -->
+      <div class="daily-quote" id="daily-quote"></div>
+
+      <div class="card">
+        <div class="field">
+          <label for="p1">❤️ Your Name</label>
+          <input type="text" id="p1" placeholder="Enter your name" maxlength="40" autocomplete="off" aria-label="Your name" />
+          <div class="error-msg" id="p1-err">Please enter your name</div>
+        </div>
+        <div class="field">
+          <label for="p2">❤️ Your Crush</label>
+          <input type="text" id="p2" placeholder="Enter your crush's name" maxlength="40" autocomplete="off" aria-label="Your crush's name" />
+          <div class="error-msg" id="p2-err">Please enter your crush's name</div>
+        </div>
+        <button class="btn btn-primary" id="calc-btn">Calculate Love ❤️</button>
+
+        <p class="privacy-note" style="margin-top:18px;font-size:12px;color:var(--text-dim);text-align:center;line-height:1.6;">
+          Your entered names and results may be stored to improve this website. Please don't enter sensitive personal information.
+        </p>
+      </div>
+
+      <!-- Theme Switcher -->
+      <div style="display:flex;gap:8px;justify-content:center;margin:18px 0;">
+        <button class="theme-btn" data-theme="dark" title="Dark Romance" aria-label="Dark Romance theme">🌙</button>
+        <button class="theme-btn" data-theme="light" title="Light Rose" aria-label="Light Rose theme">🌹</button>
+        <button class="theme-btn" data-theme="valentine" title="Valentine" aria-label="Valentine theme">❤️</button>
+        <button class="theme-btn" data-theme="anniversary" title="Anniversary" aria-label="Anniversary theme">💎</button>
+      </div>
+
+      <div class="footer-links">
+        <a id="link-privacy" role="button" tabindex="0">Privacy Policy</a> · <a id="link-terms" role="button" tabindex="0">Terms of Use</a>
+      </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- LOADING SCREEN                                               -->
+    <!-- ============================================================ -->
+    <div class="screen" id="screen-loading">
+      <div class="loading-heart">💗</div>
+      <div class="loading-text">Finding your destiny<span class="loading-dots"><span>.</span><span>.</span><span>.</span></span></div>
+      <div class="loading-progress">
+        <div class="loading-progress-bar"></div>
+      </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- RESULT SCREEN                                                -->
+    <!-- ============================================================ -->
+    <div class="screen" id="screen-result">
+      <div class="pair-names" id="result-names"></div>
+
+      <div class="result-emoji" id="result-emoji">❤️</div>
+
+      <div class="meter-wrap">
+        <svg viewBox="0 0 230 230" width="230" height="230" aria-label="Love score meter">
+          <defs>
+            <linearGradient id="meterGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#ff2f87"/>
+              <stop offset="55%" stop-color="#7c3aff"/>
+              <stop offset="100%" stop-color="#29ffc6"/>
+            </linearGradient>
+            <filter id="meterGlow">
+              <feGaussianBlur stdDeviation="4" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+          <circle class="meter-track" cx="115" cy="115" r="100"></circle>
+          <circle class="meter-fill" id="meter-fill" cx="115" cy="115" r="100" filter="url(#meterGlow)"></circle>
+        </svg>
+        <div class="meter-center">
+          <div class="meter-score" id="meter-score">0%</div>
+          <div class="meter-pct">LOVE SCORE</div>
+        </div>
+      </div>
+
+      <div class="result-message" id="result-msg"></div>
+      <div class="result-sub" id="result-sub">For fun only — not a scientific measurement 😉</div>
+
+      <div class="result-actions">
+        <div class="action-row">
+          <button class="btn btn-primary" id="share-btn">Share with Friends ❤️</button>
+          <button class="btn btn-secondary" id="favorite-btn">❤️ Save</button>
+        </div>
+        <button class="btn btn-secondary" id="retry-btn">Try Another Pair</button>
+      </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- ADMIN LOGIN SCREEN                                           -->
+    <!-- ============================================================ -->
+    <div class="screen" id="screen-admin-login">
+      <div class="card admin-box">
+        <div class="admin-lock-icon">🔐</div>
+        <h2 style="margin-top:0;font-size:19px;">Admin Access</h2>
+        <p style="color:var(--text-dim);font-size:13px;margin-top:-6px;margin-bottom:16px;">This dashboard is restricted to the site owner.</p>
+        <div class="field">
+          <label for="admin-email">Email</label>
+          <input type="email" id="admin-email" placeholder="admin@example.com" autocomplete="email" aria-label="Admin email" />
+        </div>
+        <div class="field">
+          <label for="admin-pass">Password</label>
+          <div class="password-wrap">
+            <input type="password" id="admin-pass" placeholder="Enter admin password" autocomplete="current-password" aria-label="Admin password" />
+            <button type="button" class="password-toggle" id="toggle-pass" title="Show/Hide password" aria-label="Show/Hide password">👁️</button>
+          </div>
+          <div class="error-msg" id="admin-err">Incorrect email or password</div>
+        </div>
+        <div class="forgot-row">
+          <a id="forgot-pass" role="button" tabindex="0">Forgot Password?</a>
+        </div>
+        <button class="btn btn-primary" id="admin-login-btn">
+          <span class="btn-label">Enter Dashboard</span>
+          <span class="btn-spinner" style="display:none;"></span>
+        </button>
+        <button class="btn btn-secondary" id="admin-back-btn">← Back to site</button>
+      </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- ADMIN DASHBOARD SCREEN                                       -->
+    <!-- ============================================================ -->
+    <div class="screen" id="screen-admin" style="max-width:none;">
+      <div class="admin-top">
+        <h2>📊 Admin Dashboard</h2>
+        <div class="admin-top-actions">
+          <button class="btn-small" id="export-csv-btn" title="Export as CSV">CSV</button>
+          <button class="btn-small" id="export-json-btn" title="Export as JSON">JSON</button>
+          <button class="btn-small" id="export-xlsx-btn" title="Export as Excel">Excel</button>
+          <button class="btn-small danger" id="clear-all-btn" title="Delete all data">Clear All</button>
+          <button class="btn-small" id="admin-logout-btn" title="Log out">Log out</button>
+        </div>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="stats-grid" id="stats-grid"></div>
+
+      <!-- Top 10 + Charts Row -->
+      <div class="charts-row">
+        <div class="card chart-card">
+          <h4 class="chart-title">🏆 Top 10 Highest Love Scores</h4>
+          <div class="top-scores" id="top-scores"></div>
+        </div>
+        <div class="card chart-card">
+          <h4 class="chart-title">📜 Recent Calculations</h4>
+          <div class="recent-activity" id="recent-activity"></div>
+        </div>
+      </div>
+
+      <!-- Charts Row -->
+      <div class="charts-row">
+        <div class="card chart-card">
+          <h4 class="chart-title">Weekly Trend</h4>
+          <canvas class="chart-canvas" id="trend-chart"></canvas>
+        </div>
+        <div class="card chart-card">
+          <h4 class="chart-title">Score Distribution</h4>
+          <canvas class="chart-canvas" id="distribution-chart"></canvas>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="controls-row">
+        <input type="text" id="search-input" placeholder="Search by name, crush, score..." aria-label="Search calculations" />
+        <select id="filter-score" aria-label="Filter by score">
+          <option value="all">All scores</option>
+          <option value="90-100">90–100 ❤️</option>
+          <option value="80-89">80–89 💕</option>
+          <option value="70-79">70–79 💖</option>
+          <option value="60-69">60–69 💘</option>
+          <option value="50-59">50–59 🌹</option>
+          <option value="30-49">30–49 💫</option>
+          <option value="10-29">10–29 💔</option>
+          <option value="0-9">0–9 😅</option>
+        </select>
+        <select id="filter-date" aria-label="Filter by date">
+          <option value="all">All time</option>
+          <option value="today">Today</option>
+          <option value="week">This week</option>
+          <option value="month">This month</option>
+        </select>
+        <select id="sort-order" aria-label="Sort order">
+          <option value="newest">Newest first</option>
+          <option value="oldest">Oldest first</option>
+          <option value="score_high">Highest score</option>
+          <option value="score_low">Lowest score</option>
+        </select>
+      </div>
+
+      <!-- Table -->
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Your Name</th><th>Crush Name</th><th>Score</th><th>Message</th>
+              <th>Date</th><th>Device</th><th>Browser</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="results-tbody"></tbody>
+        </table>
+      </div>
+      <div class="empty-state" id="empty-state" style="display:none;">No results found.</div>
+
+      <div class="pagination" id="pagination"></div>
+    </div>
+
+  </div>
+
+  <!-- Share Popup -->
+  <div class="modal-overlay" id="share-modal" role="dialog" aria-modal="true">
+    <div class="modal-box share-box">
+      <div class="share-box-header">
+        <h3>Share Your Love 💌</h3>
+        <button class="share-close" id="share-close" aria-label="Close share popup">✕</button>
+      </div>
+      <p class="share-message" id="share-message"></p>
+      <div class="share-grid">
+        <button class="share-option whatsapp" data-network="whatsapp">
+          <span class="share-icon">💬</span> WhatsApp
+        </button>
+        <button class="share-option facebook" data-network="facebook">
+          <span class="share-icon">📘</span> Facebook
+        </button>
+        <button class="share-option instagram" data-network="instagram">
+          <span class="share-icon">📸</span> Instagram
+        </button>
+        <button class="share-option telegram" data-network="telegram">
+          <span class="share-icon">✈️</span> Telegram
+        </button>
+        <button class="share-option twitter" data-network="twitter">
+          <span class="share-icon">🐦</span> X (Twitter)
+        </button>
+        <button class="share-option copy" data-network="copy">
+          <span class="share-icon">🔗</span> Copy Link
+        </button>
+        <button class="share-option native" data-network="native">
+          <span class="share-icon">📱</span> More
+        </button>
+      </div>
+      <div class="share-note" id="share-note" style="display:none;"></div>
+    </div>
+  </div>
+
+  <!-- Legal Modal -->
+  <div class="modal-overlay" id="legal-modal" role="dialog" aria-modal="true">
+    <div class="modal-box">
+      <h3 id="legal-title">Privacy Policy</h3>
+      <div id="legal-body"></div>
+      <button class="btn btn-secondary modal-close" id="legal-close">Close</button>
+    </div>
+  </div>
+
+  <!-- Modules -->
+  <script type="module" src="/assets/js/utils.js"></script>
+  <script type="module" src="/assets/js/config.js"></script>
+  <script type="module" src="/assets/js/loveAlgorithm.js"></script>
+  <script type="module" src="/assets/js/api.js"></script>
+  <script type="module" src="/assets/js/animations.js"></script>
+  <script type="module" src="/assets/js/particles.js"></script>
+  <script type="module" src="/assets/js/audio.js"></script>
+  <script type="module" src="/assets/js/firebaseClient.js"></script>
+  <script type="module" src="/assets/js/main.js"></script>
+  <script type="module" src="/assets/js/admin.js"></script>
+</body>
+</html>
+

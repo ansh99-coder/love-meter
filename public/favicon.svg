@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+    <rect width="32" height="32" rx="4.8" fill="#0a0012"/>
+    <defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+         <stop offset="0%" stop-color="#ff2f87"/>
+         <stop offset="100%" stop-color="#7c3aff"/>
+       </linearGradient></defs>
+    <text x="16" y="24" font-size="19.2" text-anchor="middle" fill="url(#g)">❤️</text>
+  </svg>

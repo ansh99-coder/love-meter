@@ -1,0 +1,36 @@
+{
+  "name": "love-meter",
+  "version": "2.0.0",
+  "description": "Love Meter ❤️ — Discover your magical love compatibility. Premium romantic web app with Firebase Firestore storage, Firebase Authentication, hidden admin dashboard, analytics, and a luxurious glassmorphism UI.",
+  "type": "module",
+  "main": "server.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node test-api.mjs",
+    "icons": "node scripts/generate-icons.js",
+    "audio": "node scripts/generate-audio.js",
+    "seed-admin": "node scripts/seed-admin.mjs"
+  },
+  "keywords": [
+    "love-meter",
+    "love-calculator",
+    "firebase",
+    "firestore",
+    "express",
+    "pwa",
+    "romance"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^4.21.2",
+    "firebase-admin": "^13.2.0",
+    "helmet": "^8.1.0"
+  }
+}
+

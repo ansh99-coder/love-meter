@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+      <defs>
+        <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#0a0012"/>
+          <stop offset="50%" stop-color="#120726"/>
+          <stop offset="100%" stop-color="#0a0012"/>
+        </linearGradient>
+        <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#ff2f87"/>
+          <stop offset="100%" stop-color="#7c3aff"/>
+        </linearGradient>
+      </defs>
+      <rect width="1200" height="630" fill="url(#bg)"/>
+      <rect x="0" y="0" width="1200" height="630" fill="rgba(124,58,255,0.05)"/>
+      <text x="600" y="280" font-size="80" text-anchor="middle" fill="url(#g)" font-family="sans-serif" font-weight="900">Love Meter ❤️</text>
+      <text x="600" y="360" font-size="32" text-anchor="middle" fill="#b9a9db" font-family="sans-serif">Discover your magical love compatibility</text>
+      <text x="600" y="460" font-size="40" text-anchor="middle">❤️</text>
+    </svg>

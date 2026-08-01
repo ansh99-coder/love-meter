@@ -1,0 +1,11 @@
+node_modules/
+.env
+love-meter.db
+love-meter.db-wal
+love-meter.db-shm
+*.log
+dist/
+.DS_Store
+Thumbs.db
+.env
+firebase/service-account.json
